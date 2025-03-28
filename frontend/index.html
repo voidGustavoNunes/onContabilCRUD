@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerenciamento de Clientes</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center py-10">
+  <div class="w-full max-w-4xl px-4">
+    <div class="bg-white shadow-lg rounded-lg p-8 mb-8">
+      <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">
+        Gerenciamento de Clientes
+      </h1>
+
+      <div class="grid md:grid-cols-2 gap-8">
+        <div class="bg-gray-50 p-6 rounded-lg">
+          <h2 id="formularioTitulo" class="text-xl font-semibold text-gray-700 mb-4">
+            Adicionar Novo Cliente
+          </h2>
+          <form id="formCliente" class="space-y-4">
+            <input type="hidden" id="clienteId">
+            <div>
+              <label for="nome" class="block text-sm font-medium text-gray-700">Nome</label>
+              <input 
+                type="text" 
+                id="nome" 
+                required 
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                placeholder="Digite o nome do cliente"
+              >
+            </div>
+            <div>
+              <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+              <input 
+                type="email" 
+                id="email" 
+                required 
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                placeholder="Digite o email do cliente"
+              >
+            </div>
+            <div class="flex space-x-4">
+              <button 
+                type="submit" 
+                id="botaoSubmit"
+                class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105"
+              >
+                Adicionar Cliente
+              </button>
+              <button 
+                type="button" 
+                id="botaoCancelar"
+                class="w-full bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition duration-300 hidden"
+                onclick="cancelarEdicao()"
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+
+          <div class="mt-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Importar Clientes via Excel</label>
+            <div class="flex items-center space-x-4">
+              <input 
+                type="file" 
+                id="arquivoExcel" 
+                accept=".xlsx, .xls"
+                class="hidden"
+              >
+              <button 
+                type="button" 
+                onclick="document.getElementById('arquivoExcel').click()"
+                class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition duration-300"
+              >
+                Selecionar Arquivo
+              </button>
+              <button 
+                type="button" 
+                id="botaoImportar"
+                class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300 disabled:opacity-50"
+                disabled
+              >
+                Importar
+              </button>
+            </div>
+            <p id="nomeArquivo" class="text-sm text-gray-500 mt-2"></p>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold text-gray-700">
+              Lista de Clientes
+            </h2>
+            <button 
+              onclick="carregarClientes()" 
+              class="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 transition duration-300"
+            >
+              Atualizar
+            </button>
+          </div>
+          
+          <div class="overflow-x-auto max-h-96 overflow-y-auto">
+            <table class="w-full bg-white shadow rounded-lg overflow-hidden">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="corpoTabelaClientes" class="divide-y divide-gray-200">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalExclusao" class="modal hidden items-center justify-center">
+    <div class="bg-white rounded-lg p-6 shadow-xl max-w-md w-full">
+      <h2 class="text-xl font-bold mb-4 text-gray-800">Confirmar Exclusão</h2>
+      <p class="mb-6 text-gray-600">Tem certeza que deseja excluir este cliente?</p>
+      <div class="flex justify-end space-x-4">
+        <button id="botaoCancelarExclusao" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md">Cancelar</button>
+        <button id="botaoConfirmarExclusao" class="bg-red-500 text-white px-4 py-2 rounded-md">Excluir</button>
+      </div>
+    </div>
+  </div>
+
+  <div 
+    id="notificacao" 
+    class="fixed top-4 right-4 hidden bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out"
+  >
+    Mensagem de notificação
+  </div>
+
+  <footer class="footer">
+    <div class="container-footer">
+      <div class="footer-info">
+        <p>Desenvolvido por <strong>Gustavo Nunes Guedes</strong></p>
+        <p>&copy; 2025 Todos os direitos reservados</p>
+      </div>
+      <div class="footer-social">
+        <a href="https://github.com/voidGustavoNunes" target="_blank" class="social-link">
+          <i class="ri-github-fill"></i>
+        </a>
+        <a href="https://www.instagram.com/gustavonunes051" target="_blank" class="social-link">
+          <i class="ri-instagram-fill"></i>
+        </a>
+        <a href="https://www.linkedin.com/in/gustavo-nunes-guedes-82ab5a323/" target="_blank" class="social-link">
+            <i class="ri-linkedin-fill"></i>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

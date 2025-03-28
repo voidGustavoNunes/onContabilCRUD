@@ -1,0 +1,17 @@
+# Ignora TUDO por padrão
+/*
+
+# Exceto estes diretórios específicos
+!/backend/
+!/frontend/
+
+# Dentro dos diretórios permitidos, ignora arquivos temporários
+*.class
+*.log
+*.tmp
+*.rar
+*.zip
+.DS_Store
+.idea/
+.vscode/
+node_modules/
